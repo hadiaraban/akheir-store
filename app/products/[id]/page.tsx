@@ -1,9 +1,11 @@
 'use client';
+import { Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getProductById } from '../../lib/products';
 import { useCart } from '../../context/CartContext';
 
-export default function ProductDetailPage() {
+// کامپوننت داخلی که useParams را صدا می‌زند
+function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const { addItem } = useCart();
@@ -54,5 +56,18 @@ export default function ProductDetailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// wrapper با Suspense
+export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <p className="text-gray-500">Loading product...</p>
+      </div>
+    }>
+      <ProductDetail />
+    </Suspense>
   );
 }

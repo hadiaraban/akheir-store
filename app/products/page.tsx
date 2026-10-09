@@ -1,30 +1,27 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { products } from '../lib/products';
 import ProductCard from '../components/ProductCard';
 
 const categories = ['All', 'Audio', 'Wearables', 'Accessories', 'Electronics', 'Home', 'Stationery'];
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All';
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState('featured');
 
-const filtered = useMemo(() => {
-  const base = selectedCategory === 'All'
-    ? products
-    : products.filter(p => p.category === selectedCategory);
-
-  const result = [...base]; // کپی امن برای sort
-
-  if (sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
-  if (sortBy === 'name') result.sort((a, b) => a.name.localeCompare(b.name));
-
-  return result;
-}, [selectedCategory, sortBy]);
+  const filtered = useMemo(() => {
+    const base = selectedCategory === 'All'
+      ? products
+      : products.filter(p => p.category === selectedCategory);
+    const result = [...base];
+    if (sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
+    if (sortBy === 'name') result.sort((a, b) => a.name.localeCompare(b.name));
+    return result;
+  }, [selectedCategory, sortBy]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -32,7 +29,6 @@ const filtered = useMemo(() => {
       <p className="text-gray-600 mb-8">{filtered.length} products available</p>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Filters Sidebar */}
         <aside className="md:w-64 flex-shrink-0">
           <div className="mb-6">
             <h3 className="font-semibold mb-3">Category</h3>
@@ -54,7 +50,6 @@ const filtered = useMemo(() => {
           </div>
         </aside>
 
-        {/* Products Grid */}
         <div className="flex-1">
           <div className="flex justify-end mb-4">
             <select
@@ -81,5 +76,13 @@ const filtered = useMemo(() => {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-12">Loading...</div>}>
+      <ProductsContent />
+    </Suspense>
   );
 }
